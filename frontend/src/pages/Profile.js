@@ -4,26 +4,47 @@ import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null); // Default to null instead of undefined
-  const [loading, setLoading] = useState(true); // Track loading state
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
 
-      // ✅ Fix JSON error: Ensure storedUser is valid before parsing
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const response = await fetch(
+          "https://socialx-1.onrender.com/api/auth/me", // ✅ Your backend API URL
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        const data = await response.json();
+        setUser(data);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        navigate("/login");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error loading user data:", error);
-    } finally {
-      setLoading(false); // Stop loading whether parsing succeeds or fails
-    }
-  }, []);
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
@@ -44,8 +65,8 @@ const Profile = () => {
           Profile Page
         </Typography>
 
-        {loading ? ( // ✅ Prevent disappearing by checking `loading` state
-          <Typography variant="h6" color="warning" sx={{ mt: 3 }}>
+        {loading ? (
+          <Typography variant="h6" sx={{ mt: 3 }}>
             Loading user data...
           </Typography>
         ) : user ? (
@@ -75,10 +96,7 @@ const Profile = () => {
           </Box>
         ) : (
           <Typography variant="h6" color="error" sx={{ mt: 3 }}>
-            No user data found. Please{" "}
-            <Button color="secondary" onClick={() => navigate("/login")}>
-              login
-            </Button>
+            Failed to load user data.
           </Typography>
         )}
       </Paper>
