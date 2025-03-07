@@ -4,27 +4,20 @@ import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(undefined); // Keep it undefined initially
 
-  // ✅ Safely fetch user data from localStorage
+  // ✅ Fetch user data safely
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && parsedUser.name && parsedUser.email) {
-          setUser(parsedUser);
-        } else {
-          localStorage.removeItem("user"); // Remove corrupted data
-          navigate("/login");
-        }
+        setUser(JSON.parse(storedUser));
       } else {
-        navigate("/login"); // Redirect if no user
+        setTimeout(() => navigate("/login"), 1000); // Delayed redirect
       }
     } catch (error) {
       console.error("Error loading user data:", error);
-      localStorage.removeItem("user"); // Clear bad data
-      navigate("/login");
+      setTimeout(() => navigate("/login"), 1000);
     }
   }, [navigate]);
 
@@ -51,7 +44,11 @@ const Profile = () => {
           Profile Page
         </Typography>
 
-        {user ? (
+        {user === undefined ? ( // Show loading state only when it's undefined
+          <Typography variant="h6" color="error" sx={{ mt: 3 }}>
+            Loading user data...
+          </Typography>
+        ) : user ? (
           <Box sx={{ mt: 3 }}>
             <Typography variant="h5">Welcome, {user.name}!</Typography>
             <Typography variant="body1" sx={{ mt: 1, opacity: 0.8 }}>
@@ -76,11 +73,7 @@ const Profile = () => {
               Logout
             </Button>
           </Box>
-        ) : (
-          <Typography variant="h6" color="error" sx={{ mt: 3 }}>
-            Loading user data...
-          </Typography>
-        )}
+        ) : null}
       </Paper>
     </Container>
   );
