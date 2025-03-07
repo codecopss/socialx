@@ -6,22 +6,29 @@ const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  // ✅ Fetch user data from localStorage safely
+  // ✅ Safely fetch user data from localStorage
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && parsedUser.name && parsedUser.email) {
+          setUser(parsedUser);
+        } else {
+          localStorage.removeItem("user"); // Remove corrupted data
+          navigate("/login");
+        }
       } else {
-        navigate("/login"); // Redirect to login if no user
+        navigate("/login"); // Redirect if no user
       }
     } catch (error) {
       console.error("Error loading user data:", error);
+      localStorage.removeItem("user"); // Clear bad data
       navigate("/login");
     }
   }, [navigate]);
 
-  // ✅ Logout function (clears localStorage)
+  // ✅ Logout function
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/login");
