@@ -4,24 +4,24 @@ import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(undefined); // Keep it undefined initially
+  const [user, setUser] = useState(null); // Default to null instead of undefined
+  const [loading, setLoading] = useState(true); // Track loading state
 
-  // ✅ Fetch user data safely
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
+
+      // ✅ Fix JSON error: Ensure storedUser is valid before parsing
       if (storedUser) {
         setUser(JSON.parse(storedUser));
-      } else {
-        setTimeout(() => navigate("/login"), 1000); // Delayed redirect
       }
     } catch (error) {
       console.error("Error loading user data:", error);
-      setTimeout(() => navigate("/login"), 1000);
+    } finally {
+      setLoading(false); // Stop loading whether parsing succeeds or fails
     }
-  }, [navigate]);
+  }, []);
 
-  // ✅ Logout function
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/login");
@@ -44,8 +44,8 @@ const Profile = () => {
           Profile Page
         </Typography>
 
-        {user === undefined ? ( // Show loading state only when it's undefined
-          <Typography variant="h6" color="error" sx={{ mt: 3 }}>
+        {loading ? ( // ✅ Prevent disappearing by checking `loading` state
+          <Typography variant="h6" color="warning" sx={{ mt: 3 }}>
             Loading user data...
           </Typography>
         ) : user ? (
@@ -73,7 +73,14 @@ const Profile = () => {
               Logout
             </Button>
           </Box>
-        ) : null}
+        ) : (
+          <Typography variant="h6" color="error" sx={{ mt: 3 }}>
+            No user data found. Please{" "}
+            <Button color="secondary" onClick={() => navigate("/login")}>
+              login
+            </Button>
+          </Typography>
+        )}
       </Paper>
     </Container>
   );
