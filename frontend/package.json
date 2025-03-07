@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "Frontend for SocialX",
   "main": "src/index.js",
+  "homepage": ".",
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "postbuild": "cp build/index.html build/404.html"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
