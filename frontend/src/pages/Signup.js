@@ -39,7 +39,7 @@ const Signup = () => {
     setLoading(true);
     setErrorMessage("");
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/signup", data);
+      const response = await axios.post("${process.env.REACT_APP_API_URL}/api/auth/login/api/auth/signup", data);
       console.log("Signup Success:", response.data);
       navigate("/login"); // Redirect to login after successful signup
     } catch (error) {
