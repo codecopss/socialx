@@ -24,7 +24,7 @@ const Feed = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("${process.env.REACT_APP_API_URL}/api/rss")
+    fetch(`${process.env.REACT_APP_API_URL}/api/rss`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch RSS feed");
