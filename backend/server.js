@@ -1,8 +1,9 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const cors = require("cors");
-const path = require("path");
-const connectDB = require("./config/db");
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import connectDB from "./config/db.js";
 
 dotenv.config();
 connectDB();
@@ -10,7 +11,7 @@ connectDB();
 const app = express();
 app.use(express.json());
 
-// ✅ Configure CORS to allow requests from your frontend URL
+// ✅ Configure CORS
 const allowedOrigins = ["https://socialx-1.onrender.com"];
 app.use(
   cors({
@@ -21,20 +22,25 @@ app.use(
 );
 
 // ✅ Define API Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/users", require("./routes/userRoutes"));
-app.use("/api/posts", require("./routes/postRoutes"));
-app.use("/api/rss", require("./routes/rssRoutes"));
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
+import rssRoutes from "./routes/rssRoutes.js";
 
-// ✅ Serve static files from frontend (React)
-const __dirname = path.resolve();
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/rss", rssRoutes);
+
+// ✅ Serve React Frontend
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, "/frontend/build")));
 
-// ✅ Catch-all route to serve React frontend (Fixes 404 on refresh)
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "build", "index.html"));
 });
 
-// ✅ Start the server
+// ✅ Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
