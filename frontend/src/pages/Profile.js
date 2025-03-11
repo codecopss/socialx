@@ -1,19 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { Container, Typography, Paper, Box, Button } from "@mui/material";
+import { Container, Typography, Paper, Box, Button, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // ✅ Get user details from localStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      navigate("/login"); // Redirect to login if user not found
-    }
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await axios.get("https://your-backend-url.com/api/auth/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`, // Pass token in header
+          },
+        });
+
+        setUser(response.data);
+        localStorage.setItem("user", JSON.stringify(response.data)); // Cache user data
+      } catch (err) {
+        console.error("Error fetching user:", err);
+        setError("Failed to load user data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
   }, [navigate]);
 
   return (
@@ -23,7 +44,18 @@ const Profile = () => {
           Profile Page
         </Typography>
 
-        {user ? (
+        {loading ? (
+          <Box sx={{ mt: 3 }}>
+            <CircularProgress />
+            <Typography variant="body1" sx={{ mt: 2 }}>
+              Loading user data...
+            </Typography>
+          </Box>
+        ) : error ? (
+          <Typography variant="h6" color="error" sx={{ mt: 3 }}>
+            {error}
+          </Typography>
+        ) : user ? (
           <Box sx={{ mt: 3 }}>
             <Typography variant="h5">Welcome, {user.name}!</Typography>
             <Typography variant="body1" sx={{ mt: 1, opacity: 0.7 }}>
@@ -40,7 +72,7 @@ const Profile = () => {
           </Box>
         ) : (
           <Typography variant="h6" color="error" sx={{ mt: 3 }}>
-            Loading user data...
+            No user data available.
           </Typography>
         )}
       </Paper>
