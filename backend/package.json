@@ -1,7 +1,6 @@
 {
     "name": "socialx-backend",
-    "version": "1.0.0",
-      "type": "module", 
+    "version": "1.0.0,
     "description": "Backend for SocialX",
     "main": "server.js",
     "scripts": {
